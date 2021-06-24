@@ -1,0 +1,7 @@
+fx2lp/**/*.m51
+fx2lp/**/*.LST
+fx2lp/output/
+fx2lp/output/
+max2/db/
+max2/incremental_db/
+max2/output_files/
