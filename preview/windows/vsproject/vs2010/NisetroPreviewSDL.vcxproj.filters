@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="NisetroPreviewSDL">
+      <UniqueIdentifier>{b457b8b2-bc8d-47e6-ac55-a8d652501f3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NisetroPreviewSDL\ringbuffer">
+      <UniqueIdentifier>{5defb79d-4266-41ea-bf79-276395203913}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cusb">
+      <UniqueIdentifier>{079df906-492f-4820-8d46-98f061787107}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NisetroPreviewSDL\jsoncpp">
+      <UniqueIdentifier>{30bf09ae-8168-4691-a413-779de7841e74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NisetroPreviewSDL\jsoncpp\json">
+      <UniqueIdentifier>{086edf17-9274-427c-b0d0-9b5811767169}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\NisetroPreviewSDL.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\small.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\NisetroPreviewSDL\fw2.inc">
+      <Filter>NisetroPreviewSDL</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\cusb\cusb2.h">
+      <Filter>cusb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\NisetroPreviewSDL\NisetroPreviewSDL.h">
+      <Filter>NisetroPreviewSDL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\NisetroPreviewSDL\ringbuffer\ringbuffer.h">
+      <Filter>NisetroPreviewSDL\ringbuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\NisetroPreviewSDL\NisetroPreviewSDLSetting.h">
+      <Filter>NisetroPreviewSDL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\NisetroPreviewSDL\cfx2log.h">
+      <Filter>NisetroPreviewSDL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\NisetroPreviewSDL\jsoncpp\json\json.h">
+      <Filter>NisetroPreviewSDL\jsoncpp\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\NisetroPreviewSDL\jsoncpp\json\json-forwards.h">
+      <Filter>NisetroPreviewSDL\jsoncpp\json</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\cusb\cusb2.cpp">
+      <Filter>cusb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\NisetroPreviewSDL\NisetroPreviewSDL.cpp">
+      <Filter>NisetroPreviewSDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\NisetroPreviewSDL\ringbuffer\ringbuffer.c">
+      <Filter>NisetroPreviewSDL\ringbuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\NisetroPreviewSDL\fw.cpp">
+      <Filter>NisetroPreviewSDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\NisetroPreviewSDL\NisetroPreviewSDLSetting.cpp">
+      <Filter>NisetroPreviewSDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WinMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\NisetroPreviewSDL\jsoncpp\jsoncpp.cpp">
+      <Filter>NisetroPreviewSDL\jsoncpp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\NisetroPreviewSDL.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

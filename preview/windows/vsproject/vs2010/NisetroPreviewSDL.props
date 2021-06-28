@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <SDL2_LIB_PATH>D:\SDL2-2.0.14</SDL2_LIB_PATH>
+    <FX2LP_LIB_PATH>D:\Cypress\USB\CY3684_EZ-USB_FX2LP_DVK\1.1\Windows Applications\library\cpp</FX2LP_LIB_PATH>
+    <LIBSAMPLERATE_PATH>D:\libsamplerate-0.2.1-win32</LIBSAMPLERATE_PATH>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IncludePath>$(LIBSAMPLERATE_PATH)\include\;$(SDL2_LIB_PATH)\include;$(FX2LP_LIB_PATH)\inc;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LibraryPath>$(LIBSAMPLERATE_PATH)\lib\;$(SDL2_LIB_PATH)\lib\$(PlatformShortName);$(FX2LP_LIB_PATH)\lib\$(PlatformShortName);$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)..\..\..\output\windows_$(PlatformShortName)\$(Configuration)\</OutDir>
+    <TargetName>NisetroPreviewSDL</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>samplerate.lib;SDL2.lib;CyAPI.lib;setupapi.lib;Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /y $(SDL2_LIB_PATH)\lib\$(PlatformShortName)\SDL2.dll $(TargetDir) &amp;&amp; copy /y $(LIBSAMPLERATE_PATH)\bin\samplerate.dll $(TargetDir)
+</Command>
+    </PostBuildEvent>
+    <ClCompile>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="SDL2_LIB_PATH">
+      <Value>$(SDL2_LIB_PATH)</Value>
+    </BuildMacro>
+    <BuildMacro Include="FX2LP_LIB_PATH">
+      <Value>$(FX2LP_LIB_PATH)</Value>
+    </BuildMacro>
+    <BuildMacro Include="LIBSAMPLERATE_PATH">
+      <Value>$(LIBSAMPLERATE_PATH)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
