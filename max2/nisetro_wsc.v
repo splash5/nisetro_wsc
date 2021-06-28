@@ -301,14 +301,11 @@ end
 reg first_audio_frame_arrived = 0;
 reg [31:0] audio_capture_buffer [0:`AUDIO_CAPTURE_BUFFER_COUNT];
 reg [`AUDIO_CAPTURE_BUFFER_BITS - 1: 0] audio_buffer_index = 0;
-reg [4:0] audio_buffer_bit_index = 0;
 
 wire AUDIO_CAPTURE_ENABLED;
 assign AUDIO_CAPTURE_ENABLED = first_audio_frame_arrived;
 
-/*
-// FIXME when playing WS compatible WSC games, there will be noise on right channel...
-// for WS only or WSC only games, there is no noise...
+// capture audio data (right justified data format)
 always @(posedge WSC_LRCK or posedge CAPTURE_RESET)
 begin
 	if (CAPTURE_RESET == 1) begin
@@ -352,9 +349,11 @@ begin
 		end
 	end
 end
-*/
 
-// capture audio data (right justified data format)
+/*
+old method for capturing I2S 
+reg [4:0] audio_buffer_bit_index = 0;
+
 always @(posedge WSC_LRCK or posedge CAPTURE_RESET)
 begin
 	if (CAPTURE_RESET == 1) begin
@@ -412,6 +411,7 @@ begin
 		end	
 	end
 end
+*/
 
 function [7:0] audio_fifo_write_data;
 	input [1:0] byte_sel;
