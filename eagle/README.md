@@ -23,13 +23,13 @@ I also uploaded the gerber zip file to [OSHPARK](https://oshpark.com/shared_proj
 ||||710-687624100002|1|FPC cable (Same Side Contacts)
 ||||710-687724100002|1|FPC cable (Opposite Side Contacts)
 
-![PCB top](pcb_top)
-![PCB bottom](pcb_bottom)
+![PCB top](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/eagle/nisetoro_wsc_adapter_v2_top.png)
+![PCB bottom](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/eagle/nisetoro_wsc_adapter_v2_bottom.png)
 
 You will also need a 0.5mm pitch, 24pins FPC cable to connect from WSC CN2 (LCD connector) to adapter PCB CN3. The length should be at least 80mm long, or it will be very hard to install. I have tested with 150mm one and works ok, but if cable is too long the signal may not capture properly. The FPC cable also have two types: same side or opposite contacts. Choose one which makes installation easier, but **be sure that pin #1 of WSC CN2 connect to adapter board CN3 pin #1**, or you might damage your WSC or adapter board.
 
 After soldering all the parts on the adapter PCB, it should looks like this:
-![PCB finished](aaa)
+![PCB finished](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/eagle/pcb_completed.jpg)
 Now you will need to connect at least RESET and BCLK to WSC to make everything work. LRCK, SDAT and SEN is for audio capturing. ON1 and ON2 are optional if you want to install a tactile switch as power switch. "TO WSC" is 1.5V output, connect V1 and VS to WSC power supply module V1 and VS pin.
-![solder points top](wsc_top)
-![solder points bottom](wsc_bottom)
+![solder points top](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/eagle/wsc_top.jpg)
+![solder points bottom](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/eagle/wsc_bottom.jpg)
