@@ -146,6 +146,12 @@ void NisetroPreviewSDLSetting::loadFromJsonValue(Json::Value &json_value)
 		setVideoTextureFilter(0);
 
 	// ===========================================
+	if ((value = json_value.get("video_texture_scale_mode", SDL_ScaleModeNearest)).isConvertibleTo(Json::intValue))
+		setVideoTextureScaleMode(value.asInt());
+	else
+		setVideoTextureScaleMode(SDL_ScaleModeNearest);
+
+	// ===========================================
 	if ((value = json_value.get("screenshot_path", "")).isConvertibleTo(Json::stringValue))
 		setScreenshotPath(value.asCString());
 	else
@@ -271,6 +277,17 @@ void NisetroPreviewSDLSetting::setVideoTextureFilter(int filter)
 		filter = 2;
 
 	setting_value_["video_texture_filter"] = video_texture_filter_ = filter;
+}
+
+void NisetroPreviewSDLSetting::setVideoTextureScaleMode(int mode)
+{
+	if (mode < SDL_ScaleModeNearest)
+		mode = SDL_ScaleModeNearest;
+
+	if (mode > SDL_ScaleModeBest)
+		mode = SDL_ScaleModeBest;
+
+	setting_value_["video_texture_scale_mode"] = video_texture_scale_mode_ = mode;
 }
 
 void NisetroPreviewSDLSetting::setShowLCDSegments(bool value)

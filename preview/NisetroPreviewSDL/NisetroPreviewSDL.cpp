@@ -630,12 +630,14 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 					if (texture)
 						SDL_DestroyTexture(texture);
 
-					// FIXME not working at all
+					// set render scale hint
 					SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", nisetro->setting_->getVideoTextureFilter());
 
 					// create texture for rendering
 					texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_XRGB4444, SDL_TEXTUREACCESS_STREAMING, getNextPowerOfTwo(frame_texture_rect.w), getNextPowerOfTwo(frame_texture_rect.h));
+					SDL_SetTextureScaleMode(texture, nisetro->setting_->getVideoTextureScaleMode());
 					SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
+					
 
 					// clear texture
 					SDL_LockTextureToSurface(texture, NULL, &surface);
@@ -786,6 +788,8 @@ int NisetroPreviewSDL::audioThreadProc(void *userdata)
 
 	// force update parameters once
 	nisetro->audioplay_params_dirty_ = true;
+
+	SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "Using audio input frequency: %6.3f, ratio = %.8f", input_frequency, src_data.src_ratio);
 
 	while (nisetro->keep_running_)
 	{

@@ -26,6 +26,7 @@ public:
 
 	SDL_FORCE_INLINE int32_t getVideoBackBufferSize(void) { return video_backbuffer_size_; }
 	SDL_FORCE_INLINE const char *getVideoTextureFilter(void) { return NisetroPreviewSDLSetting::textureScaleQuality[video_texture_filter_]; }
+	SDL_FORCE_INLINE SDL_ScaleMode getVideoTextureScaleMode(void) { return (SDL_ScaleMode)video_texture_scale_mode_; }
 
 	SDL_FORCE_INLINE const char *getScreenshotPath(void) { return screenshot_path_; }
 	SDL_FORCE_INLINE uint8_t getUSBDeviceID(void) { return usb_device_id_; }
@@ -44,6 +45,7 @@ public:
 
 	void setVideoBackBufferSize(int size);
 	void setVideoTextureFilter(int filter);
+	void setVideoTextureScaleMode(int mode);
 
 	void setShowLCDSegments(bool value);
 	
@@ -68,6 +70,7 @@ private:
 
 	int32_t video_backbuffer_size_;
 	int32_t video_texture_filter_;
+	int32_t video_texture_scale_mode_;
 	bool show_lcd_segments_;
 	
 	int32_t window_width_;
