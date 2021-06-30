@@ -22,6 +22,7 @@
 
 const uint64_t NisetroPreviewSDL::performanceFrequency = SDL_GetPerformanceFrequency();
 const SDL_Rect NisetroPreviewSDL::frameSurfaceRect = { 0, 0, VIDEO_FRAME_LOGICAL_WIDTH, VIDEO_FRAME_LOGICAL_HEIGHT };
+const SDL_Rect NisetroPreviewSDL::renderSurfaceRect = { 0, 0, VIDEO_FRAME_VALID_WIDTH, VIDEO_FRAME_VALID_LINES };
 NisetroPreviewSDLSetting NisetroPreviewSDL::defaultSetting;
 
 NisetroPreviewSDL::NisetroPreviewSDL(SDL_Window *window, NisetroPreviewSDLSetting *setting)
@@ -124,6 +125,7 @@ bool NisetroPreviewSDL::init(void)
 		}
 	}
 
+	// for filling raw RGB444 pixel data
 	SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, VIDEO_FRAME_WIDTH, VIDEO_FRAME_VALID_LINES, 16, SDL_PIXELFORMAT_XRGB4444);
 
 	if (surface == NULL)
@@ -133,7 +135,9 @@ bool NisetroPreviewSDL::init(void)
 	}
 
 	video_frame_surface_ = surface;
-	render_surface_ = SDL_CreateRGBSurfaceWithFormat(0, VIDEO_FRAME_WIDTH, VIDEO_FRAME_VALID_LINES, 16, SDL_PIXELFORMAT_XRGB4444);
+	
+	// for rendering
+	render_surface_ = SDL_CreateRGBSurfaceWithFormat(0, VIDEO_FRAME_WIDTH, VIDEO_FRAME_VALID_LINES, 16, SDL_PIXELFORMAT_ARGB8888);
 
 	SDL_SetSurfaceBlendMode(video_frame_surface_, SDL_BLENDMODE_NONE);
 	SDL_SetSurfaceBlendMode(render_surface_, SDL_BLENDMODE_NONE);
@@ -462,6 +466,7 @@ void NisetroPreviewSDL::processCaptureData(uint16_t *data, uint32_t element_coun
 	uint16_t sync_state;
 	uint16_t *pd;
 	uint32_t p;
+	bool segment_dirty = true;
 
 	for (uint32_t i = 0; i < element_count; i++)
 	{
@@ -490,8 +495,9 @@ void NisetroPreviewSDL::processCaptureData(uint16_t *data, uint32_t element_coun
 				{
 					if (video_frame_lines_ == 4)
 					{
-						uint16_t lcd_segment_state;
 						// update LCD segment
+						// when in sleep mode, only line #4 contains segment data
+						uint16_t lcd_segment_state;						
 						pd = pixels_ + 160 + 64 + 16;
 						p = 0;
 
@@ -500,38 +506,45 @@ void NisetroPreviewSDL::processCaptureData(uint16_t *data, uint32_t element_coun
 						// enable and power is always on
 						if ((lcd_segment_state & (LCD_SEGMENT_POWER | LCD_SEGMENT_ENABLED)) == (LCD_SEGMENT_POWER | LCD_SEGMENT_ENABLED))
 						{
-							lcd_segment_state_ = lcd_segment_state;
-
-							// see if we need to rotate 
-							p = screen_orientation_;
-
-							if ((lcd_segment_state_ & LCD_SEGMENT_VERTICAL))
-								screen_orientation_ = 1;
-							else if ((lcd_segment_state_ & LCD_SEGMENT_HORIZONTAL))
-								screen_orientation_ = 2;
-
-							// screen orientation changed
-							if (p != screen_orientation_)
+							// only update if segment state changed
+							if ((lcd_segment_state ^ lcd_segment_state_))
 							{
-								SDL_Event e;
-								SDL_memset(&e, 0, sizeof(e));
+								// see if we need to rotate 
+								p = screen_orientation_;
 
-								e.type = SDL_USEREVENT;
-								e.user.code = 512;
-								e.user.data1 = reinterpret_cast<void*>(screen_orientation_);
+								if ((lcd_segment_state & LCD_SEGMENT_VERTICAL))
+									screen_orientation_ = 1;
+								else if ((lcd_segment_state & LCD_SEGMENT_HORIZONTAL))
+									screen_orientation_ = 2;
 
-								SDL_PushEvent(&e);
-							}	
+								// screen orientation changed
+								if (p != screen_orientation_)
+								{
+									SDL_Event e;
+									SDL_memset(&e, 0, sizeof(e));
+
+									e.type = SDL_USEREVENT;
+									e.user.code = 512;
+									e.user.data1 = reinterpret_cast<void*>(screen_orientation_);
+
+									SDL_PushEvent(&e);
+								}
+
+								// update segment surface?
+								segment_dirty = true;
+							}
+
+							lcd_segment_state_ = lcd_segment_state;
 						}
 					}
 					else if (video_frame_lines_ == 147)
 					{
-						// TODO update segment to surface
+						// copies frame surface to render surface so we can keep capturing running.
 						// notify render thread to render
 						if (video_frame_pixels_ == (VIDEO_FRAME_WIDTH * (VIDEO_FRAME_VALID_LINES + 4)) /* TODO show error frame? */)
 						{
 							SDL_LockMutex(render_thread_mutex_);
-							SDL_BlitSurface(video_frame_surface_, NULL, render_surface_, NULL);
+							SDL_BlitSurface(video_frame_surface_, &NisetroPreviewSDL::renderSurfaceRect, render_surface_, NULL);
 							SDL_CondSignal(render_thread_cond_);
 							SDL_UnlockMutex(render_thread_mutex_);
 						}
@@ -614,13 +627,17 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 	while (nisetro->keep_running_)
 	{
 		SDL_LockMutex(nisetro->render_thread_mutex_);
-		render_wait_timeout = SDL_CondWaitTimeout(nisetro->render_thread_cond_, nisetro->render_thread_mutex_, 1000);
+
+		// frame interval is (256 x 159) / 3072000 = 13.25ms
+		// so we just set timeout to about 4x of frame interval
+		render_wait_timeout = SDL_CondWaitTimeout(nisetro->render_thread_cond_, nisetro->render_thread_mutex_, 50);
 
 		SDL_AtomicTryLock(&nisetro->render_params_lock_);
 		{
 			if (nisetro->render_params_dirty_)
 			{
 				// recreate texture if backbuffer size changed
+				// TODO also checks texture filter and scale mode
 				if (backbuffer_size != nisetro->setting_->getVideoBackBufferSize())
 				{
 					backbuffer_size = nisetro->setting_->getVideoBackBufferSize();
@@ -634,11 +651,10 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 					SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", nisetro->setting_->getVideoTextureFilter());
 
 					// create texture for rendering
-					texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_XRGB4444, SDL_TEXTUREACCESS_STREAMING, getNextPowerOfTwo(frame_texture_rect.w), getNextPowerOfTwo(frame_texture_rect.h));
+					texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, getNextPowerOfTwo(frame_texture_rect.w), getNextPowerOfTwo(frame_texture_rect.h));
 					SDL_SetTextureScaleMode(texture, nisetro->setting_->getVideoTextureScaleMode());
 					SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
 					
-
 					// clear texture
 					SDL_LockTextureToSurface(texture, NULL, &surface);
 					SDL_FillRect(surface, NULL, 0);
@@ -889,7 +905,7 @@ int NisetroPreviewSDL::audioThreadProc(void *userdata)
 				{
 					samples_streamed += src_data.output_frames_gen;
 
-					if (samples_streamed > 2048)
+					if (samples_streamed > 1024)
 					{
 						SDL_PauseAudioDevice(nisetro->audio_device_id_, 0);
 						samples_streamed = -1;

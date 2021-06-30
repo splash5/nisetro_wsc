@@ -13,7 +13,9 @@
 
 #define VIDEO_FRAME_WIDTH			256
 #define VIDEO_FRAME_LINES			159
+#define VIDEO_FRAME_VALID_WIDTH		224
 #define VIDEO_FRAME_VALID_LINES		144
+#define VIDEO_FRAME_SEGMENT_WIDTH	16
 #define VIDEO_FRAME_PIXELS			VIDEO_FRAME_LINES * VIDEO_FRAME_WIDTH
 #define AUDIO_SAMPLES_PER_FRAME		VIDEO_FRAME_LINES * 2
 
@@ -145,6 +147,7 @@ private:
 
 private:
 	static const SDL_Rect frameSurfaceRect;
+	static const SDL_Rect renderSurfaceRect;
 	static const uint64_t performanceFrequency;
 	
 	static NisetroPreviewSDLSetting defaultSetting;
@@ -171,6 +174,7 @@ public:
 public:
 	void setWindowSize(int32_t size);
 	void setWindowRotateMethod(int32_t method);
+	void setWindowOrientation(int32_t orientation);
 
 	void setAudioDeviceName(const char *device_name);
 	void setAudioEnableInterpolation(int32_t enabled);
@@ -183,8 +187,6 @@ public:
 	void requestScreenshot(void);
 
 private:
-	void setWindowOrientation(int32_t orientation);
-
 	static void setRendererLogicalSize(SDL_Renderer *renderer, int32_t orientation);
 	static void getKeroricanWindowSize(int32_t original_width, int32_t original_height, int32_t *kerorican_width, int32_t *kerorican_height);
 	static void getOriginalWindowSize(int32_t kerorican_width, int32_t kerorican_height, int32_t *original_width, int32_t *original_height);
