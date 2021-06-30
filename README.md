@@ -1,5 +1,5 @@
 # nisetro_wsc
-Capturing and perviewing WonderSwan Color screen/audio
+Capturing and perviewing WonderSwan Color screen/audio with カメレオンUSB FX2.
 
 This project is based on カメレオンUSB FX2 http://optimize.ath.cx/cusb_fx2/index.html
 
@@ -9,7 +9,7 @@ eagle: Schematic, PCB and gerber file. (Design with EAGLE 9.6.2)
 
 fx2lp: FX2LP uVision project.
 
-max2: MAX2 Quartus project. (Develop with Quartus 13.0sp1 web version)
+max2: MAX2 Quartus project. (Develop with Quartus 13.0sp1 web edition)
 
 preview: Preview software project. (Develop with Visual C++ Express 2010)
 
