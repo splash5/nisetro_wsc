@@ -112,6 +112,7 @@ private:
 
 	SDL_Surface *video_frame_surface_;
 	SDL_Surface *render_surface_;
+	SDL_Surface *segment_surface_;
 	uint8_t capture_buffer_[BUF_LEN * QUE_NUM];
 	ringbuffer capture_ringbuffer_;
 
@@ -148,6 +149,7 @@ private:
 private:
 	static const SDL_Rect frameSurfaceRect;
 	static const SDL_Rect renderSurfaceRect;
+	static SDL_Rect segmentSurfaceRect;
 	static const uint64_t performanceFrequency;
 	
 	static NisetroPreviewSDLSetting defaultSetting;

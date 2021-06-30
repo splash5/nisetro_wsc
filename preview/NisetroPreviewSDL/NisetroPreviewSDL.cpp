@@ -23,6 +23,7 @@
 const uint64_t NisetroPreviewSDL::performanceFrequency = SDL_GetPerformanceFrequency();
 const SDL_Rect NisetroPreviewSDL::frameSurfaceRect = { 0, 0, VIDEO_FRAME_LOGICAL_WIDTH, VIDEO_FRAME_LOGICAL_HEIGHT };
 const SDL_Rect NisetroPreviewSDL::renderSurfaceRect = { 0, 0, VIDEO_FRAME_VALID_WIDTH, VIDEO_FRAME_VALID_LINES };
+SDL_Rect NisetroPreviewSDL::segmentSurfaceRect = { VIDEO_FRAME_VALID_WIDTH, 0, VIDEO_FRAME_SEGMENT_WIDTH, VIDEO_FRAME_VALID_LINES };
 NisetroPreviewSDLSetting NisetroPreviewSDL::defaultSetting;
 
 NisetroPreviewSDL::NisetroPreviewSDL(SDL_Window *window, NisetroPreviewSDLSetting *setting)
@@ -90,6 +91,9 @@ NisetroPreviewSDL::~NisetroPreviewSDL(void)
 	if (render_surface_)
 		SDL_FreeSurface(render_surface_);
 
+	if (segment_surface_)
+		SDL_FreeSurface(segment_surface_);
+
 	if (audio_device_id_ > 0)
 	{
 		SDL_PauseAudioDevice(audio_device_id_, 1);
@@ -137,10 +141,16 @@ bool NisetroPreviewSDL::init(void)
 	video_frame_surface_ = surface;
 	
 	// for rendering
-	render_surface_ = SDL_CreateRGBSurfaceWithFormat(0, VIDEO_FRAME_WIDTH, VIDEO_FRAME_VALID_LINES, 16, SDL_PIXELFORMAT_ARGB8888);
+	render_surface_ = SDL_CreateRGBSurfaceWithFormat(0, VIDEO_FRAME_WIDTH, VIDEO_FRAME_VALID_LINES, 32, SDL_PIXELFORMAT_ARGB8888);
+
+	// for segment drawing
+	segment_surface_ = SDL_CreateRGBSurfaceWithFormat(0, VIDEO_FRAME_SEGMENT_WIDTH, VIDEO_FRAME_VALID_LINES, 32, SDL_PIXELFORMAT_ARGB8888);
 
 	SDL_SetSurfaceBlendMode(video_frame_surface_, SDL_BLENDMODE_NONE);
 	SDL_SetSurfaceBlendMode(render_surface_, SDL_BLENDMODE_NONE);
+	SDL_SetSurfaceBlendMode(segment_surface_, SDL_BLENDMODE_NONE);
+
+	SDL_FillRect(segment_surface_, NULL, 0xff3a2d4b);
 
 	return true;
 }
@@ -466,7 +476,6 @@ void NisetroPreviewSDL::processCaptureData(uint16_t *data, uint32_t element_coun
 	uint16_t sync_state;
 	uint16_t *pd;
 	uint32_t p;
-	bool segment_dirty = true;
 
 	for (uint32_t i = 0; i < element_count; i++)
 	{
@@ -530,8 +539,7 @@ void NisetroPreviewSDL::processCaptureData(uint16_t *data, uint32_t element_coun
 									SDL_PushEvent(&e);
 								}
 
-								// update segment surface?
-								segment_dirty = true;
+								// TODO update segment surface
 							}
 
 							lcd_segment_state_ = lcd_segment_state;
@@ -544,6 +552,7 @@ void NisetroPreviewSDL::processCaptureData(uint16_t *data, uint32_t element_coun
 						if (video_frame_pixels_ == (VIDEO_FRAME_WIDTH * (VIDEO_FRAME_VALID_LINES + 4)) /* TODO show error frame? */)
 						{
 							SDL_LockMutex(render_thread_mutex_);
+							SDL_BlitSurface(segment_surface_, NULL, render_surface_, &NisetroPreviewSDL::segmentSurfaceRect);
 							SDL_BlitSurface(video_frame_surface_, &NisetroPreviewSDL::renderSurfaceRect, render_surface_, NULL);
 							SDL_CondSignal(render_thread_cond_);
 							SDL_UnlockMutex(render_thread_mutex_);
