@@ -30,6 +30,7 @@ You will also need a 0.5mm pitch, 24pins FPC cable to connect from WSC CN2 (LCD 
 
 After soldering all the parts on the adapter PCB, it should looks like this:
 ![PCB finished](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/eagle/pcb_completed.jpg)
+
 Now you will need to connect at least RESET and BCLK to WSC to make everything work. LRCK, SDAT and SEN is for audio capturing. ON1 and ON2 are optional if you want to install a tactile switch as power switch. "TO WSC" is 1.5V output, connect V1 and VS to WSC power supply module V1 and VS pin.
 ![solder points top](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/eagle/wsc_top.jpg)
 ![solder points bottom](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/eagle/wsc_bottom.jpg)
