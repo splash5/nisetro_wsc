@@ -172,12 +172,6 @@ void NisetroPreviewSDLSetting::loadFromJsonValue(Json::Value &json_value)
 
 #if 0
 	// ===========================================
-	if ((value = json_value.get("show_lcd_segments", true)).isConvertibleTo(Json::booleanValue))
-		setShowLCDSegments(value.asBool());
-	else
-		setShowLCDSegments(true);
-
-	// ===========================================
 	if ((value = json_value.get("audio_enabled", true)).isConvertibleTo(Json::booleanValue))
 		setAudioEnabled(value.asBool());
 	else
@@ -257,42 +251,53 @@ void NisetroPreviewSDLSetting::setAudioVolume(float volume)
 	setting_value_["audio_volume"] = audio_volume_ = volume;
 }
 
-void NisetroPreviewSDLSetting::setVideoBackBufferSize(int size)
+bool NisetroPreviewSDLSetting::setVideoBackBufferSize(int size)
 {
-	if (size <= 0)
+	bool ret = false;
+
+	if (size < 1)
 		size = 1;
 
 	if (size > 5)
 		size = 5;
 
+	ret = (video_backbuffer_size_ != size);
+
 	setting_value_["video_backbuffer_size"] = video_backbuffer_size_ = size;
+
+	return ret;
 }
 
-void NisetroPreviewSDLSetting::setVideoTextureFilter(int filter)
+bool NisetroPreviewSDLSetting::setVideoTextureFilter(int filter)
 {
+	bool ret = false;
+
 	if (filter < 0)
 		filter = 0;
 
 	if (filter > 2)
 		filter = 2;
 
+	ret = (video_texture_filter_ != filter);
 	setting_value_["video_texture_filter"] = video_texture_filter_ = filter;
+
+	return ret;
 }
 
-void NisetroPreviewSDLSetting::setVideoTextureScaleMode(int mode)
+bool NisetroPreviewSDLSetting::setVideoTextureScaleMode(int mode)
 {
+	bool ret = false;
+
 	if (mode < SDL_ScaleModeNearest)
 		mode = SDL_ScaleModeNearest;
 
 	if (mode > SDL_ScaleModeBest)
 		mode = SDL_ScaleModeBest;
 
+	ret = (mode != video_texture_scale_mode_);
 	setting_value_["video_texture_scale_mode"] = video_texture_scale_mode_ = mode;
-}
 
-void NisetroPreviewSDLSetting::setShowLCDSegments(bool value)
-{
-	setting_value_["show_lcd_segments"] = show_lcd_segments_ = value;
+	return ret;
 }
 
 void NisetroPreviewSDLSetting::setScreenshotPath(const char *path)

@@ -17,7 +17,6 @@
 #define VIDEO_FRAME_VALID_LINES		144
 #define VIDEO_FRAME_SEGMENT_WIDTH	16
 #define VIDEO_FRAME_PIXELS			VIDEO_FRAME_LINES * VIDEO_FRAME_WIDTH
-#define AUDIO_SAMPLES_PER_FRAME		VIDEO_FRAME_LINES * 2
 
 #define VIDEO_FRAME_LOGICAL_WIDTH	240
 #define VIDEO_FRAME_LOGICAL_HEIGHT	144
@@ -177,6 +176,10 @@ public:
 	void setWindowSize(int32_t size);
 	void setWindowRotateMethod(int32_t method);
 	void setWindowOrientation(int32_t orientation);
+	
+	void setVideoBackBufferSize(int32_t size);
+	void setVideoTextureScaleMode(int32_t mode);
+	void setVideoTextureFilter(int32_t filter);
 
 	void setAudioDeviceName(const char *device_name);
 	void setAudioEnableInterpolation(int32_t enabled);

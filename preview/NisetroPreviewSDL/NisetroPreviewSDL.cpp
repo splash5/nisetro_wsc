@@ -17,13 +17,13 @@
 #include <stdio.h>
 #include <time.h>
 
-#define AUDIO_DEVICE_BUFFER_SAMPLES		512
+#define AUDIO_DEVICE_BUFFER_SAMPLES		32
 #define AUDIO_PROCESS_BUFFER_SIZE		1024
 
 const uint64_t NisetroPreviewSDL::performanceFrequency = SDL_GetPerformanceFrequency();
 const SDL_Rect NisetroPreviewSDL::frameSurfaceRect = { 0, 0, VIDEO_FRAME_LOGICAL_WIDTH, VIDEO_FRAME_LOGICAL_HEIGHT };
 const SDL_Rect NisetroPreviewSDL::renderSurfaceRect = { 0, 0, VIDEO_FRAME_VALID_WIDTH, VIDEO_FRAME_VALID_LINES };
-SDL_Rect NisetroPreviewSDL::segmentSurfaceRect = { VIDEO_FRAME_VALID_WIDTH, 0, VIDEO_FRAME_SEGMENT_WIDTH, VIDEO_FRAME_VALID_LINES };
+SDL_Rect NisetroPreviewSDL::segmentSurfaceRect = { 0, 0, VIDEO_FRAME_SEGMENT_WIDTH, VIDEO_FRAME_VALID_LINES };
 NisetroPreviewSDLSetting NisetroPreviewSDL::defaultSetting;
 
 NisetroPreviewSDL::NisetroPreviewSDL(SDL_Window *window, NisetroPreviewSDLSetting *setting)
@@ -144,7 +144,8 @@ bool NisetroPreviewSDL::init(void)
 	render_surface_ = SDL_CreateRGBSurfaceWithFormat(0, VIDEO_FRAME_WIDTH, VIDEO_FRAME_VALID_LINES, 32, SDL_PIXELFORMAT_ARGB8888);
 
 	// for segment drawing
-	segment_surface_ = SDL_CreateRGBSurfaceWithFormat(0, VIDEO_FRAME_SEGMENT_WIDTH, VIDEO_FRAME_VALID_LINES, 32, SDL_PIXELFORMAT_ARGB8888);
+	// TODO load from bmp
+	segment_surface_ = SDL_CreateRGBSurfaceWithFormat(0, NisetroPreviewSDL::segmentSurfaceRect.w, NisetroPreviewSDL::segmentSurfaceRect.h, 32, SDL_PIXELFORMAT_ARGB8888);
 
 	SDL_SetSurfaceBlendMode(video_frame_surface_, SDL_BLENDMODE_NONE);
 	SDL_SetSurfaceBlendMode(render_surface_, SDL_BLENDMODE_NONE);
@@ -257,7 +258,7 @@ void NisetroPreviewSDL::handleUserEvent(const SDL_UserEvent *user_event)
 
 			// cut out non-visible area
 			// TODO use a flag to cut out lcd segment area
-			surface->w = 240;		
+			surface->w = 224;		
 
 			char screenshot_filepath[4096];
 			getLocalTimeString(screenshot_filepath + sizeof(screenshot_filepath) - 18, 18);
@@ -507,10 +508,10 @@ void NisetroPreviewSDL::processCaptureData(uint16_t *data, uint32_t element_coun
 						// update LCD segment
 						// when in sleep mode, only line #4 contains segment data
 						uint16_t lcd_segment_state;						
-						pd = pixels_ + 160 + 64 + 16;
+						pd = pixels_ + VIDEO_FRAME_VALID_WIDTH + VIDEO_FRAME_SEGMENT_WIDTH;
 						p = 0;
 
-						do { lcd_segment_state = ((lcd_segment_state << 1) | (*(--pd) & 0x0001)); } while (++p < 16);
+						do { lcd_segment_state = ((lcd_segment_state << 1) | (*(--pd) & 0x0001)); } while (++p < VIDEO_FRAME_SEGMENT_WIDTH);
 
 						// enable and power is always on
 						if ((lcd_segment_state & (LCD_SEGMENT_POWER | LCD_SEGMENT_ENABLED)) == (LCD_SEGMENT_POWER | LCD_SEGMENT_ENABLED))
@@ -538,12 +539,13 @@ void NisetroPreviewSDL::processCaptureData(uint16_t *data, uint32_t element_coun
 
 									SDL_PushEvent(&e);
 								}
-
-								// TODO update segment surface
 							}
 
 							lcd_segment_state_ = lcd_segment_state;
 						}
+
+						// copy segment state to render_surface for later rendering
+						*(pixels_ + VIDEO_FRAME_VALID_WIDTH) = lcd_segment_state_;
 					}
 					else if (video_frame_lines_ == 147)
 					{
@@ -552,8 +554,7 @@ void NisetroPreviewSDL::processCaptureData(uint16_t *data, uint32_t element_coun
 						if (video_frame_pixels_ == (VIDEO_FRAME_WIDTH * (VIDEO_FRAME_VALID_LINES + 4)) /* TODO show error frame? */)
 						{
 							SDL_LockMutex(render_thread_mutex_);
-							SDL_BlitSurface(segment_surface_, NULL, render_surface_, &NisetroPreviewSDL::segmentSurfaceRect);
-							SDL_BlitSurface(video_frame_surface_, &NisetroPreviewSDL::renderSurfaceRect, render_surface_, NULL);
+							SDL_BlitSurface(video_frame_surface_, NULL, render_surface_, NULL);
 							SDL_CondSignal(render_thread_cond_);
 							SDL_UnlockMutex(render_thread_mutex_);
 						}
@@ -615,14 +616,20 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 	NisetroPreviewSDL *nisetro = reinterpret_cast<NisetroPreviewSDL*>(userdata);
 	nisetro->render_params_dirty_ = true;
 	
-	SDL_Rect frame_texture_rect;
+	SDL_Rect frame_rect;
+	SDL_Rect segment_rect;
+	SDL_Rect texture_rect;
 	SDL_FRect frame_copy_frect;
 	double render_rotate_angle;
 	int backbuffer_size = 0;
+	int texture_scale_mode = -1;
+	int render_scale_quality = -1;
+
 	int render_wait_timeout;
 
-	frame_texture_rect.x = 0;
-	frame_texture_rect.y = 0;
+	frame_rect.x = frame_rect.y = 0;
+	texture_rect.x = texture_rect.y = 0;
+	segment_rect.y = 0;
 
 	// create renderer and texture
 	SDL_Renderer *renderer = SDL_CreateRenderer(nisetro->window_, -1, SDL_RENDERER_ACCELERATED);
@@ -645,23 +652,34 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 		{
 			if (nisetro->render_params_dirty_)
 			{
-				// recreate texture if backbuffer size changed
-				// TODO also checks texture filter and scale mode
-				if (backbuffer_size != nisetro->setting_->getVideoBackBufferSize())
+				// recreate texture if any of texture setting changed
+				if (backbuffer_size != nisetro->setting_->getVideoBackBufferSize() ||
+					texture_scale_mode != nisetro->setting_->getVideoTextureScaleMode() ||
+					render_scale_quality != nisetro->setting_->getVideoTextureFilter())
 				{
 					backbuffer_size = nisetro->setting_->getVideoBackBufferSize();
-					frame_texture_rect.w = 240 * backbuffer_size;
-					frame_texture_rect.h = 144 * backbuffer_size;
+					texture_scale_mode = nisetro->setting_->getVideoTextureScaleMode();
+					render_scale_quality = nisetro->setting_->getVideoTextureFilter();
+
+					frame_rect.w = VIDEO_FRAME_VALID_WIDTH * backbuffer_size;
+					frame_rect.h = VIDEO_FRAME_VALID_LINES * backbuffer_size;
+
+					segment_rect.x = frame_rect.w;
+					segment_rect.h = frame_rect.h;
+					segment_rect.w = VIDEO_FRAME_SEGMENT_WIDTH * backbuffer_size;
+
+					texture_rect.w = frame_rect.w + segment_rect.w;
+					texture_rect.h = frame_rect.h;
 
 					if (texture)
 						SDL_DestroyTexture(texture);
 
-					// set render scale hint
-					SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", nisetro->setting_->getVideoTextureFilter());
+					// set render scale hint (seems not working at all...)
+					SDL_SetHintWithPriority("SDL_HINT_RENDER_SCALE_QUALITY", nisetro->setting_->getVideoTextureFilterString(), SDL_HINT_OVERRIDE);
 
 					// create texture for rendering
-					texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, getNextPowerOfTwo(frame_texture_rect.w), getNextPowerOfTwo(frame_texture_rect.h));
-					SDL_SetTextureScaleMode(texture, nisetro->setting_->getVideoTextureScaleMode());
+					texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, getNextPowerOfTwo(texture_rect.w), getNextPowerOfTwo(texture_rect.h));
+					SDL_SetTextureScaleMode(texture, (SDL_ScaleMode)texture_scale_mode);
 					SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
 					
 					// clear texture
@@ -682,10 +700,12 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 		// only update texture when render surface is updated in time
 		if (render_wait_timeout == 0)
 		{
-			// TODO draw LCD segment on render_surface?
+			// TODO update segment_surface
+			uint16_t segment_state = *(reinterpret_cast<uint16_t*>(nisetro->render_surface_->pixels) + VIDEO_FRAME_VALID_WIDTH);
 
-			SDL_LockTextureToSurface(texture, &frame_texture_rect, &surface);
-			SDL_BlitScaled(nisetro->render_surface_, &NisetroPreviewSDL::frameSurfaceRect, surface, &frame_texture_rect);
+			SDL_LockTextureToSurface(texture, NULL, &surface);
+			SDL_BlitScaled(nisetro->segment_surface_, &NisetroPreviewSDL::segmentSurfaceRect, surface, &segment_rect);
+			SDL_BlitScaled(nisetro->render_surface_, &NisetroPreviewSDL::renderSurfaceRect, surface, &frame_rect);
 			SDL_UnlockTexture(texture);
 		}
 
@@ -703,7 +723,7 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 
 		SDL_UnlockMutex(nisetro->render_thread_mutex_);
 
-		SDL_RenderCopyExF(renderer, texture, &frame_texture_rect, &frame_copy_frect, render_rotate_angle, NULL, SDL_FLIP_NONE);
+		SDL_RenderCopyExF(renderer, texture, &texture_rect, &frame_copy_frect, render_rotate_angle, NULL, SDL_FLIP_NONE);
 		SDL_RenderPresent(renderer);
 	}
 
@@ -1043,6 +1063,36 @@ void NisetroPreviewSDL::setWindowRotateMethod(int32_t method)
 		}
 		default: return;
 	}
+}
+
+void NisetroPreviewSDL::setVideoBackBufferSize(int32_t size)
+{
+	SDL_AtomicLock(&render_params_lock_);
+	{
+		if (setting_->setVideoBackBufferSize(size))
+			render_params_dirty_ = true;
+	}
+	SDL_AtomicUnlock(&render_params_lock_);
+}
+
+void NisetroPreviewSDL::setVideoTextureScaleMode(int32_t mode)
+{
+	SDL_AtomicLock(&render_params_lock_);
+	{
+		if (setting_->setVideoTextureScaleMode(mode))
+			render_params_dirty_ = true;
+	}
+	SDL_AtomicUnlock(&render_params_lock_);
+}
+
+void NisetroPreviewSDL::setVideoTextureFilter(int32_t filter)
+{
+	SDL_AtomicLock(&render_params_lock_);
+	{
+		if (setting_->setVideoTextureFilter(filter))
+			render_params_dirty_ = true;
+	}
+	SDL_AtomicUnlock(&render_params_lock_);
 }
 
 void NisetroPreviewSDL::setAudioDeviceName(const char *audio_device_name)

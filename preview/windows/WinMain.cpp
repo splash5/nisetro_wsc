@@ -11,6 +11,7 @@ HWND get_sdl_window_hwnd(SDL_Window *window);
 void initialize_ui_from_setting(NisetroPreviewSDLSetting *setting);
 
 static NisetroPreviewSDL *nisetro = NULL;
+static SDL_Window *sdl_window = NULL;
 static HWND hMainWindow;
 static HMENU hMenu;
 static HACCEL hAccel;
@@ -61,25 +62,25 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 	// SDL_RegisterEvents(1024);
 
 	// create SDL window
-	SDL_Window *window = SDL_CreateWindow(tmp,
-										  SDL_WINDOWPOS_UNDEFINED,
-										  SDL_WINDOWPOS_UNDEFINED,
-										  1,
-										  1,
-										  SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	sdl_window = SDL_CreateWindow(tmp,
+								  SDL_WINDOWPOS_UNDEFINED,
+								  SDL_WINDOWPOS_UNDEFINED,
+								  1,
+								  1,
+								  SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
-	if (window == NULL)
+	if (sdl_window == NULL)
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Unable to create window: %s", SDL_GetError());
 		return -1;
 	}
 
-	nisetro = new NisetroPreviewSDL(window, &setting);
+	nisetro = new NisetroPreviewSDL(sdl_window, &setting);
 	
 	if (!nisetro->init())
 		goto at_nisetro_exit;
 
-	hMainWindow = get_sdl_window_hwnd(window);
+	hMainWindow = get_sdl_window_hwnd(sdl_window);
 	hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(ID_MENU_NISETROPREVIEWSDL));
 	hAccel = LoadAccelerators(hInstance, MAKEINTRESOURCE(ID_ACCEL_NISETROPREVIEWSDL));
 
@@ -187,6 +188,35 @@ void handle_wm_command(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 			break;
 		}
+		case ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X1:
+		case ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X2:
+		case ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X3:
+		case ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X4:
+		case ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X5:
+		{
+			if (CheckMenuRadioItem(hMenu, ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X1, ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X5, wmId, MF_BYCOMMAND))
+				nisetro->setVideoBackBufferSize(wmId - ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X1 + 1);
+
+			break;
+		}
+		case ID_MENU_OPTIONS_VIDEO_TEXTURESCALE_NEAREST:
+		case ID_MENU_OPTIONS_VIDEO_TEXTURESCALE_LINEAR:
+		case ID_MENU_OPTIONS_VIDEO_TEXTURESCALE_BEST:
+		{
+			if (CheckMenuRadioItem(hMenu, ID_MENU_OPTIONS_VIDEO_TEXTURESCALE_NEAREST, ID_MENU_OPTIONS_VIDEO_TEXTURESCALE_BEST, wmId, MF_BYCOMMAND))
+				nisetro->setVideoTextureScaleMode(wmId - ID_MENU_OPTIONS_VIDEO_TEXTURESCALE_NEAREST);
+
+			break;
+		}
+		case ID_MENU_OPTIONS_VIDEO_TEXTUREFILTER_NEAREST:
+		case ID_MENU_OPTIONS_VIDEO_TEXTUREFILTER_LINEAR:
+		case ID_MENU_OPTIONS_VIDEO_TEXTUREFILTER_BEST:
+		{
+			if (CheckMenuRadioItem(hMenu, ID_MENU_OPTIONS_VIDEO_TEXTUREFILTER_NEAREST, ID_MENU_OPTIONS_VIDEO_TEXTUREFILTER_BEST, wmId, MF_BYCOMMAND))
+				nisetro->setVideoTextureFilter(wmId - ID_MENU_OPTIONS_VIDEO_TEXTUREFILTER_NEAREST);
+
+			break;
+		}
 		case ID_MENU_OPTIONS_AUDIO_ENABLEINTERPOLATION:
 		{
 			menu_state = GetMenuState(hMenu, ID_MENU_OPTIONS_AUDIO_ENABLEINTERPOLATION, MF_BYCOMMAND);
@@ -231,6 +261,15 @@ void handle_wm_command(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 			break;
 		}
+		case ID_MENU_OPTIONS_VIDEO_FULLSCREEN:
+		{
+			menu_state = GetMenuState(hMenu, ID_MENU_OPTIONS_VIDEO_FULLSCREEN, MF_BYCOMMAND);
+			menu_state = ((menu_state & MF_CHECKED) ? MF_UNCHECKED : MF_CHECKED);
+			CheckMenuItem(hMenu, ID_MENU_OPTIONS_VIDEO_FULLSCREEN, menu_state);
+
+//			nisetro->setAudioEnableInterpolation((menu_state ? 1 : 0));
+			break;
+		}
 		case ID_MENU_HELP_ABOUT:
 		{
 			// TODO
@@ -253,6 +292,9 @@ void initialize_ui_from_setting(NisetroPreviewSDLSetting *setting)
 	CheckMenuRadioItem(hMenu, ID_MENU_OPTIONS_VIDEO_ROTATE_AUTO, ID_MENU_OPTIONS_VIDEO_ROTATE_HORIZONTAL, ID_MENU_OPTIONS_VIDEO_ROTATE_AUTO, MF_BYCOMMAND);
 	CheckMenuRadioItem(hMenu, ID_MENU_OPTIONS_VIDEO_SIZE_X1, ID_MENU_OPTIONS_VIDEO_SIZE_X5, ID_MENU_OPTIONS_VIDEO_SIZE_X1, MF_BYCOMMAND);
 
+	CheckMenuRadioItem(hMenu, ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X1, ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X5, ID_MENU_OPTIONS_VIDEO_BACKBUFFER_SIZE_X1 + (setting->getVideoBackBufferSize() - 1), MF_BYCOMMAND);
+	CheckMenuRadioItem(hMenu, ID_MENU_OPTIONS_VIDEO_TEXTURESCALE_NEAREST, ID_MENU_OPTIONS_VIDEO_TEXTURESCALE_BEST, ID_MENU_OPTIONS_VIDEO_TEXTURESCALE_NEAREST + setting->getVideoTextureScaleMode(), MF_BYCOMMAND);
+	CheckMenuRadioItem(hMenu, ID_MENU_OPTIONS_VIDEO_TEXTUREFILTER_NEAREST, ID_MENU_OPTIONS_VIDEO_TEXTUREFILTER_BEST, ID_MENU_OPTIONS_VIDEO_TEXTUREFILTER_NEAREST + setting->getVideoTextureFilter(), MF_BYCOMMAND);
 	CheckMenuItem(hMenu, ID_MENU_OPTIONS_AUDIO_MUTEAUDIO, (setting->getAudioVolume() < 0 ? MF_CHECKED : MF_UNCHECKED));
 	CheckMenuItem(hMenu, ID_MENU_OPTIONS_AUDIO_ENABLEINTERPOLATION, (setting->getAudioInterpolationEnabled() ? MF_CHECKED : MF_UNCHECKED));
 

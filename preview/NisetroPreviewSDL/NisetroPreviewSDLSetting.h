@@ -25,7 +25,8 @@ public:
 	SDL_FORCE_INLINE float getAudioVolume(void) { return audio_volume_; }
 
 	SDL_FORCE_INLINE int32_t getVideoBackBufferSize(void) { return video_backbuffer_size_; }
-	SDL_FORCE_INLINE const char *getVideoTextureFilter(void) { return NisetroPreviewSDLSetting::textureScaleQuality[video_texture_filter_]; }
+	SDL_FORCE_INLINE const char *getVideoTextureFilterString(void) { return NisetroPreviewSDLSetting::textureScaleQuality[video_texture_filter_]; }
+	SDL_FORCE_INLINE int32_t getVideoTextureFilter(void) { return video_texture_filter_; }
 	SDL_FORCE_INLINE SDL_ScaleMode getVideoTextureScaleMode(void) { return (SDL_ScaleMode)video_texture_scale_mode_; }
 
 	SDL_FORCE_INLINE const char *getScreenshotPath(void) { return screenshot_path_; }
@@ -43,11 +44,9 @@ public:
 	void setAudioInterpolationEnabled(bool value);
 	void setAudioVolume(float volume);
 
-	void setVideoBackBufferSize(int size);
-	void setVideoTextureFilter(int filter);
-	void setVideoTextureScaleMode(int mode);
-
-	void setShowLCDSegments(bool value);
+	bool setVideoBackBufferSize(int size);
+	bool setVideoTextureFilter(int filter);
+	bool setVideoTextureScaleMode(int mode);
 	
 	void setScreenshotPath(const char *path);
 	void setUSBDeviceID(uint8_t usb_device_id);
@@ -71,7 +70,6 @@ private:
 	int32_t video_backbuffer_size_;
 	int32_t video_texture_filter_;
 	int32_t video_texture_scale_mode_;
-	bool show_lcd_segments_;
 	
 	int32_t window_width_;
 	int32_t window_height_;
