@@ -97,6 +97,12 @@
     <ClCompile Include="..\..\..\NisetroPreviewSDL\jsoncpp\jsoncpp.cpp">
       <Filter>NisetroPreviewSDL\jsoncpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\NisetroPreviewSDL\segment_bg.cpp">
+      <Filter>NisetroPreviewSDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\NisetroPreviewSDL\segment_icon.cpp">
+      <Filter>NisetroPreviewSDL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\NisetroPreviewSDL.rc">

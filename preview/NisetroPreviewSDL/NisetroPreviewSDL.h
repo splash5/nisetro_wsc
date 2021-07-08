@@ -111,7 +111,8 @@ private:
 
 	SDL_Surface *video_frame_surface_;
 	SDL_Surface *render_surface_;
-	SDL_Surface *segment_surface_;
+	SDL_Surface *segment_bg_surface_;
+	SDL_Surface *segment_icon_surface_;
 	uint8_t capture_buffer_[BUF_LEN * QUE_NUM];
 	ringbuffer capture_ringbuffer_;
 
@@ -134,6 +135,7 @@ private:
 	int32_t window_orientation_;
 
 	SDL_FRect frame_copy_frect_;	// rect for copy frame texture to renderer
+	SDL_FRect segment_copy_frect_;	// rect for copy segment texture to renderer
 	double render_rotate_angle_;	// output rotate
 	
 	char *audio_device_name_;
@@ -148,9 +150,8 @@ private:
 private:
 	static const SDL_Rect frameSurfaceRect;
 	static const SDL_Rect renderSurfaceRect;
-	static SDL_Rect segmentSurfaceRect;
 	static const uint64_t performanceFrequency;
-	
+
 	static NisetroPreviewSDLSetting defaultSetting;
 
 private:
@@ -198,5 +199,10 @@ private:
 
 	static size_t getLocalTimeString(char *buf, size_t buf_size);
 	static int32_t getNextPowerOfTwo(int32_t value);
+
+private:
+	static const uint8_t segment_bg_bitmap[73878];
+	static const uint8_t segment_icon_bitmap[73878];
+	static const SDL_Rect segment_mask_rects[16];
 };
 #endif
