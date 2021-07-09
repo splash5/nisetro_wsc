@@ -27,20 +27,20 @@ const SDL_Rect NisetroPreviewSDL::segment_mask_rects[] =
 {
 	{ 0, 0, 0, 0 },	// X
 	{ 0, 0, 0, 0 },	// X
-	{ 0, 529, 32, 25 },	// POWER
-	{ 0, 486, 32, 19 },	// CARTRIDGE
-	{ 0, 420, 32, 36 },	// SLEEP
-	{ 0, 334, 32, 55 },	// LOW_BATTERY
-	{ 0, 283, 32, 21 },	// VOLUME_0
-	{ 0, 265, 32, 8 },	// VOLUME_2
-	{ 0, 255, 32, 10 },	// VOLUME_3
-	{ 0, 206, 32, 25 },	// HEADPHONE
-	{ 0, 164, 32, 25 },	// VERTICAL
-	{ 0, 118, 32, 25 },	// HORIZONTAL
-	{ 0, 87, 32, 11 },	// DOT1
-	{ 0, 60, 32, 14 },	// DOT2
-	{ 0, 22, 32, 23 },	// DOT3
-	{ 0, 275, 32, 5 },	// VOLUME_1
+	{ 0, 926, 56, 44 },	// POWER
+	{ 0, 851, 56, 33 },	// CARTRIDGE
+	{ 0, 736, 56, 61 },	// SLEEP
+	{ 0, 585, 56, 96 },	// LOW_BATTERY
+	{ 0, 482, 56, 8 },	// VOLUME_1
+	{ 0, 465, 56, 13 },	// VOLUME_2
+	{ 0, 446, 56, 17 },	// VOLUME_3
+	{ 0, 360, 56, 45 },	// HEADPHONE
+	{ 0, 287, 56, 43 },	// VERTICAL
+	{ 0, 206, 56, 44 },	// HORIZONTAL
+	{ 0, 153, 56, 19 },	// DOT1
+	{ 0, 105, 56, 24 },	// DOT2
+	{ 0, 38, 56, 40 },	// DOT3
+	{ 0, 496, 56, 36 },	// VOLUME_0
 };
 
 NisetroPreviewSDLSetting NisetroPreviewSDL::defaultSetting;
@@ -245,9 +245,10 @@ void NisetroPreviewSDL::handleWindowEvent(const SDL_WindowEvent *window_event)
 					}
 					case 3:	// kerorican
 					{
-						// FIXME for frame and segment copy rect
-						frame_copy_frect_.x = (KERORICAN_FRAME_LOGICAL_WIDTH - VIDEO_FRAME_LOGICAL_WIDTH) / 2.0f;
-						frame_copy_frect_.y = (KERORICAN_FRAME_LOGICAL_HEIGHT - VIDEO_FRAME_LOGICAL_HEIGHT) / 2.0f;
+ 						frame_copy_frect_.x = (VIDEO_FRAME_VALID_LINES * KERORICAN_ROTATE_SINE - VIDEO_FRAME_VALID_WIDTH * (1.0 - KERORICAN_ROTATE_COSINE)) / 2.0;
+						frame_copy_frect_.y = (((VIDEO_FRAME_VALID_WIDTH + VIDEO_FRAME_SEGMENT_WIDTH * 2) * KERORICAN_ROTATE_SINE) - VIDEO_FRAME_VALID_LINES * (1.0 - KERORICAN_ROTATE_COSINE)) / 2.0;
+						segment_copy_frect_.x = (VIDEO_FRAME_VALID_LINES * KERORICAN_ROTATE_SINE + (VIDEO_FRAME_VALID_WIDTH * 2 + VIDEO_FRAME_SEGMENT_WIDTH) * KERORICAN_ROTATE_COSINE - VIDEO_FRAME_SEGMENT_WIDTH) / 2.0;
+						segment_copy_frect_.y = ((VIDEO_FRAME_SEGMENT_WIDTH * KERORICAN_ROTATE_SINE) - VIDEO_FRAME_VALID_LINES * (1.0 - KERORICAN_ROTATE_COSINE)) / 2.0;
 						render_rotate_angle_ = -KERORICAN_ROTATE_DEGREE;
 						break;
 					}
@@ -668,23 +669,22 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 	int backbuffer_size = 0;
 	int texture_scale_mode = -1;
 	int render_scale_quality = -1;
+	int render_wait_timeout;
 
-	uint16_t segment_state = 0xffff, last_segment_state = 0;
+	uint16_t segment_state = 0, last_segment_state = 0;
 	int32_t segment_mask_count;
 	SDL_Rect segment_mask[14] = { 0 };
-
-	int render_wait_timeout;
 
 	frame_rect.x = frame_rect.y = 0;
 
 	// create renderer and texture
-	SDL_Renderer *renderer = SDL_CreateRenderer(nisetro->window_, -1, SDL_RENDERER_ACCELERATED);
+	SDL_Renderer *renderer = SDL_CreateRenderer(nisetro->window_, -1, (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE));
 	SDL_Texture *texture = NULL;
-	SDL_Surface *surface;
+	SDL_Surface *surface;	
 
 	// create target texture for drawing segment
 	SDL_Rect *segment_rect = SDL_reinterpret_cast(SDL_Rect*, nisetro->segment_bg_surface_->userdata);
-	SDL_Texture *segment_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, segment_rect->w, segment_rect->h);
+	SDL_Texture *segment_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, getNextPowerOfTwo(segment_rect->w), getNextPowerOfTwo(segment_rect->h));
 	SDL_SetTextureScaleMode(segment_texture, SDL_ScaleModeBest);
 	SDL_SetTextureBlendMode(segment_texture, SDL_BLENDMODE_BLEND);
 
@@ -698,11 +698,6 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 	SDL_SetTextureScaleMode(segment_icon_texture, SDL_ScaleModeBest);
 	SDL_SetTextureBlendMode(segment_icon_texture, SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_DST_ALPHA, SDL_BLENDFACTOR_ZERO, SDL_BLENDOPERATION_ADD,
 																			 SDL_BLENDFACTOR_DST_ALPHA, SDL_BLENDFACTOR_ZERO, SDL_BLENDOPERATION_ADD));
-
-	// clear renderer
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
-	SDL_RenderClear(renderer);
 
 	while (nisetro->keep_running_)
 	{
@@ -746,9 +741,6 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 				segment_copy_frect = nisetro->segment_copy_frect_;
 				render_rotate_angle = nisetro->render_rotate_angle_;
 
-				// FIXME
-				segment_copy_frect.w = 8.0f;
-
 				setRendererLogicalSize(renderer, nisetro->window_orientation_);
 				nisetro->render_params_dirty_ = false;
 			}
@@ -788,16 +780,22 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 			{
 				if ((segment_state & (1 << i)))
 					segment_mask[segment_mask_count++] = NisetroPreviewSDL::segment_mask_rects[i];
+
+				// TODO volume segments
 			}
 
 			SDL_SetRenderTarget(renderer, segment_texture);
+
+			// clear target texture
 			SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
 			SDL_RenderClear(renderer);
 
+			// draw rects with alpha value 255 where we want to showing out icon
 			SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
 			SDL_RenderFillRects(renderer, segment_mask, segment_mask_count);
 
-			SDL_RenderCopy(renderer, segment_icon_texture, NULL, NULL);
+			// draw icon texture
+			SDL_RenderCopy(renderer, segment_icon_texture, NULL, segment_rect);
 			SDL_SetRenderTarget(renderer, NULL);
 
 			last_segment_state = segment_state;
@@ -815,6 +813,7 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 	SDL_DestroyTexture(texture);
 	SDL_DestroyTexture(segment_texture);
 	SDL_DestroyTexture(segment_bg_texture);
+	SDL_DestroyTexture(segment_icon_texture);
 	SDL_DestroyRenderer(renderer);
 
 	SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "render thread ended");
@@ -1357,8 +1356,8 @@ void NisetroPreviewSDL::setWindowOrientation(int32_t orientation)
 
 void NisetroPreviewSDL::getKeroricanWindowSize(int32_t original_width, int32_t original_height, int32_t *kerorican_width, int32_t *kerorican_height)
 {
-	*kerorican_width = (int32_t)(original_width * KERORICAN_ROTATE_COSINE + original_height * KERORICAN_ROTATE_SINE);
-	*kerorican_height = (int32_t)(original_height * KERORICAN_ROTATE_COSINE + original_width * KERORICAN_ROTATE_SINE);
+	*kerorican_width = (int32_t)(original_width * KERORICAN_ROTATE_COSINE + original_height * KERORICAN_ROTATE_SINE + 0.5);
+	*kerorican_height = (int32_t)(original_height * KERORICAN_ROTATE_COSINE + original_width * KERORICAN_ROTATE_SINE + 0.5);
 }
 
 void NisetroPreviewSDL::getOriginalWindowSize(int32_t kerorican_width, int32_t kerorican_height, int32_t *original_width, int32_t *original_height)
