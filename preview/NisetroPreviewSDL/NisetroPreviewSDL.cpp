@@ -245,10 +245,10 @@ void NisetroPreviewSDL::handleWindowEvent(const SDL_WindowEvent *window_event)
 					}
 					case 3:	// kerorican
 					{
- 						frame_copy_frect_.x = (VIDEO_FRAME_VALID_LINES * KERORICAN_ROTATE_SINE - VIDEO_FRAME_VALID_WIDTH * (1.0 - KERORICAN_ROTATE_COSINE)) / 2.0;
-						frame_copy_frect_.y = (((VIDEO_FRAME_VALID_WIDTH + VIDEO_FRAME_SEGMENT_WIDTH * 2) * KERORICAN_ROTATE_SINE) - VIDEO_FRAME_VALID_LINES * (1.0 - KERORICAN_ROTATE_COSINE)) / 2.0;
-						segment_copy_frect_.x = (VIDEO_FRAME_VALID_LINES * KERORICAN_ROTATE_SINE + (VIDEO_FRAME_VALID_WIDTH * 2 + VIDEO_FRAME_SEGMENT_WIDTH) * KERORICAN_ROTATE_COSINE - VIDEO_FRAME_SEGMENT_WIDTH) / 2.0;
-						segment_copy_frect_.y = ((VIDEO_FRAME_SEGMENT_WIDTH * KERORICAN_ROTATE_SINE) - VIDEO_FRAME_VALID_LINES * (1.0 - KERORICAN_ROTATE_COSINE)) / 2.0;
+ 						frame_copy_frect_.x = (float)(VIDEO_FRAME_VALID_LINES * KERORICAN_ROTATE_SINE - VIDEO_FRAME_VALID_WIDTH * (1.0 - KERORICAN_ROTATE_COSINE)) / 2.0;
+						frame_copy_frect_.y = (float)(((VIDEO_FRAME_VALID_WIDTH + VIDEO_FRAME_SEGMENT_WIDTH * 2) * KERORICAN_ROTATE_SINE) - VIDEO_FRAME_VALID_LINES * (1.0 - KERORICAN_ROTATE_COSINE)) / 2.0;
+						segment_copy_frect_.x = (float)(VIDEO_FRAME_VALID_LINES * KERORICAN_ROTATE_SINE + (VIDEO_FRAME_VALID_WIDTH * 2 + VIDEO_FRAME_SEGMENT_WIDTH) * KERORICAN_ROTATE_COSINE - VIDEO_FRAME_SEGMENT_WIDTH) / 2.0;
+						segment_copy_frect_.y = (float)((VIDEO_FRAME_SEGMENT_WIDTH * KERORICAN_ROTATE_SINE) - VIDEO_FRAME_VALID_LINES * (1.0 - KERORICAN_ROTATE_COSINE)) / 2.0;
 						render_rotate_angle_ = -KERORICAN_ROTATE_DEGREE;
 						break;
 					}
@@ -684,7 +684,7 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 
 	// create target texture for drawing segment
 	SDL_Rect *segment_rect = SDL_reinterpret_cast(SDL_Rect*, nisetro->segment_bg_surface_->userdata);
-	SDL_Texture *segment_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, getNextPowerOfTwo(segment_rect->w), getNextPowerOfTwo(segment_rect->h));
+	SDL_Texture *segment_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, segment_rect->w, segment_rect->h);
 	SDL_SetTextureScaleMode(segment_texture, SDL_ScaleModeBest);
 	SDL_SetTextureBlendMode(segment_texture, SDL_BLENDMODE_BLEND);
 
@@ -692,6 +692,8 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 	SDL_Texture *segment_bg_texture = SDL_CreateTextureFromSurface(renderer, nisetro->segment_bg_surface_);
 	SDL_SetTextureScaleMode(segment_bg_texture, SDL_ScaleModeBest);
 	SDL_SetTextureBlendMode(segment_bg_texture, SDL_BLENDMODE_BLEND);
+	SDL_SetTextureColorMod(segment_bg_texture, 0x18, 0x18, 0x18);
+	SDL_SetTextureAlphaMod(segment_bg_texture, 0xff);
 
 	// texture for segment icon
 	SDL_Texture *segment_icon_texture = SDL_CreateTextureFromSurface(renderer, nisetro->segment_icon_surface_);
@@ -771,8 +773,20 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 
 		SDL_UnlockMutex(nisetro->render_thread_mutex_);
 
+		// workaround for this error message
+		// ERROR: SDL failed to get a vertex buffer for this Direct3D 9 rendering batch!
+		// ERROR: Dropping back to a slower method.
+		// ERROR : This might be a brief hiccup, but if performance is bad, this is probably why.
+		// ERROR : This error will not be logged again for this renderer.
+		// 
+		// when set render target to texture first time, there is nothing to render (cmd is SDL_RENDERCMD_SETVIEWPORT)
+		// so renderer->vertex_data_used will be zero which makes vbo keeps NULL
+		// which makes later vbo null check be true
+		// workaround here is just drawing something needs vbo so the vertex size will not be zero
+		SDL_RenderFillRect(renderer, NULL);
+
 		// render LCD segments
-		if (segment_state != last_segment_state)
+		// if (segment_state != last_segment_state)
 		{
 			segment_mask_count = 0;
 
