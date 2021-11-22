@@ -14,3 +14,6 @@ max2: MAX2 Quartus project. (Develop with Quartus 13.0sp1 web edition)
 preview: Preview software project. (Develop with Visual C++ Express 2010)
 
 You will also need FX2LP SDK, SDL 2.0.14 and libsamplerate 0.2.1 to build/run preview software.
+
+![1](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/eagle/without_cusbfx2.jpg)
+![2](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/eagle/with_cusbfx2.jpg)
