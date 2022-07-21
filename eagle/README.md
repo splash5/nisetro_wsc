@@ -6,9 +6,9 @@ I also uploaded the gerber zip file to [OSHPARK](https://oshpark.com/shared_proj
 
  - BOM
 
-|Part|Package|Value|Mouser|Qty|Note
+|Part|Package|Value|Mouser part no.|Qty|Note
 |--|--|--|--|--|--|
-|C1,C2,C3,C4,C5|C0603|0.1uF|80-C0805C104J5R|5|MLCC
+|C1,C2,C3,C4,C5|C0603|0.1uF|80-C0603C104J5R|5|MLCC
 |C6|C1206|10uF 16V|581-TAJA106K016RNJV|1|Tantalum Capacitors
 |C7|C1206|100uF 4V|581-TAJA107K004RNJ|1|Tantalum Capacitors
 |R1|R0603|10K|754-RG1608P-103DT5|1|
