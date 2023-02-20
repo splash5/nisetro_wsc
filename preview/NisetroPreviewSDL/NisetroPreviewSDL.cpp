@@ -31,16 +31,19 @@ const SDL_Rect NisetroPreviewSDL::segment_mask_rects[] =
 	{ 0, 851, 56, 33 },	// CARTRIDGE
 	{ 0, 736, 56, 61 },	// SLEEP
 	{ 0, 585, 56, 96 },	// LOW_BATTERY
-	{ 0, 482, 56, 8 },	// VOLUME_1
+
+	{ 0, 496, 56, 36 },	// VOLUME_0
 	{ 0, 465, 56, 13 },	// VOLUME_2
 	{ 0, 446, 56, 17 },	// VOLUME_3
+
 	{ 0, 360, 56, 45 },	// HEADPHONE
 	{ 0, 287, 56, 43 },	// VERTICAL
 	{ 0, 206, 56, 44 },	// HORIZONTAL
 	{ 0, 153, 56, 19 },	// DOT1
 	{ 0, 105, 56, 24 },	// DOT2
 	{ 0, 38, 56, 40 },	// DOT3
-	{ 0, 496, 56, 36 },	// VOLUME_0
+
+	{ 0, 482, 56, 8 }	// VOLUME_1
 };
 
 NisetroPreviewSDLSetting NisetroPreviewSDL::defaultSetting;
@@ -56,7 +59,9 @@ NisetroPreviewSDL::NisetroPreviewSDL(SDL_Window *window, NisetroPreviewSDLSettin
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_SYSTEM, SDL_LOG_PRIORITY_DEBUG);
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_ERROR, SDL_LOG_PRIORITY_ERROR);
 
-	SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "SDL Version: %d", SDL_COMPILEDVERSION);
+	SDL_version sdl_version;
+	SDL_GetVersion(&sdl_version);
+	SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "SDL Version: %d.%d.%d", sdl_version.major, sdl_version.minor, sdl_version.patch);
 
 	window_ = window;
 	setting_ = setting;
@@ -794,9 +799,10 @@ int NisetroPreviewSDL::renderThreadProc(void *userdata)
 			{
 				if ((segment_state & (1 << i)))
 					segment_mask[segment_mask_count++] = NisetroPreviewSDL::segment_mask_rects[i];
-
-				// TODO volume segments
 			}
+
+			if (segment_state & (1 << 8))
+				segment_mask[segment_mask_count++] = NisetroPreviewSDL::segment_mask_rects[15];
 
 			SDL_SetRenderTarget(renderer, segment_texture);
 

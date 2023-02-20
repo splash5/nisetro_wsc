@@ -2,9 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <SDL2_LIB_PATH>D:\SDL2-2.0.14</SDL2_LIB_PATH>
+    <SDL2_LIB_PATH>D:\SDL2-2.0.22</SDL2_LIB_PATH>
     <FX2LP_LIB_PATH>D:\Cypress\USB\CY3684_EZ-USB_FX2LP_DVK\1.1\Windows Applications\library\cpp</FX2LP_LIB_PATH>
-    <LIBSAMPLERATE_PATH>D:\libsamplerate-0.2.1-win32</LIBSAMPLERATE_PATH>
+    <LIBSAMPLERATE_PATH>D:\libsamplerate-0.2.2-win32</LIBSAMPLERATE_PATH>
   </PropertyGroup>
   <PropertyGroup>
     <IncludePath>$(LIBSAMPLERATE_PATH)\include\;$(SDL2_LIB_PATH)\include;$(FX2LP_LIB_PATH)\inc;$(IncludePath)</IncludePath>

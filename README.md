@@ -21,3 +21,4 @@ You will also need FX2LP SDK, SDL 2.0.14 and libsamplerate 0.2.1 to build/run pr
 ![4](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/preview/preview2.png)
 ![5](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/preview/preview3.png)
 ![6](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/preview/preview4.png)
+![7](https://raw.githubusercontent.com/splash5/nisetro_wsc/main/preview/preview5.png)

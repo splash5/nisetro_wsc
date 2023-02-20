@@ -49,7 +49,7 @@ assign DEBUG_DCLK_OUT = DCLK;
 `define LINE_PIXEL_END			`LINE_PIXEL_START + 240
 
 // 1 for 40ns, 2 for 60ns delay
-`define BCLK_DELAY_COUNT		2
+`define BCLK_DELAY_COUNT		1
 
 `define MAX2_REG_ADDR_BITS		3
 `define MAX2_MODE_START			0
@@ -83,7 +83,7 @@ input wire [1:0] MAX2_MODE;
 input wire MAX2_RESET;
 input wire MAX2_FIFO_DIR;
 
-inout wire WSC_EXT_SOUND_ENABLE;
+output wire WSC_EXT_SOUND_ENABLE;
 input wire WSC_RESET;
 input wire WSC_BCLK;
 input wire WSC_DCLK1;
@@ -101,7 +101,7 @@ wire CAPTURE_RESET;
 assign CAPTURE_RESET = (MAX2_RESET | WSC_nRESET);
 
 reg ext_sound_enabled = 1'b1;
-assign WSC_EXT_SOUND_ENABLE = (ext_sound_enabled == 1'b1 ? 1'b0 : 1'bz);
+assign WSC_EXT_SOUND_ENABLE = ext_sound_enabled;
 
 // buffers for caching pixel data
 reg [15:0] capture_buffer [0:`CAPTURE_BUFFER_COUNT];

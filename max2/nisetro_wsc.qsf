@@ -104,11 +104,6 @@ set_location_assignment PIN_86 -to WSC_RGB[10]
 set_location_assignment PIN_87 -to WSC_RGB[11]
 set_instance_assignment -name IO_STANDARD "3.3V SCHMITT TRIGGER INPUT" -to FX2_IFCLK
 set_instance_assignment -name IO_STANDARD "3.3V SCHMITT TRIGGER INPUT" -to FX2_CLKOUT
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to WSC_BCLK
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to WSC_DCLK1
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to WSC_LRCK
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to WSC_HSYNC
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to WSC_VSYNC
 set_instance_assignment -name IO_STANDARD "3.3V SCHMITT TRIGGER INPUT" -to WSC_BCLK
 set_instance_assignment -name IO_STANDARD "3.3V SCHMITT TRIGGER INPUT" -to WSC_HSYNC
 set_instance_assignment -name IO_STANDARD "3.3V SCHMITT TRIGGER INPUT" -to WSC_LRCK
@@ -125,3 +120,59 @@ set_location_assignment PIN_56 -to DEBUG_OUT[4]
 set_location_assignment PIN_57 -to DEBUG_OUT[5]
 set_location_assignment PIN_58 -to DEBUG_OUT[6]
 set_location_assignment PIN_61 -to DEBUG_OUT[7]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_CLKOUT
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FD[7]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FD[6]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FD[4]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FD[3]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FD[2]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FD[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FD[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FIFOADDR[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FIFOADDR[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FLAGA
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FLAGB
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FLAGC
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_IFCLK
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_PKTEND
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_SLOE
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_SLRD
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_SLWR
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to MAX2_FIFO_DIR
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to MAX2_MODE[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to MAX2_MODE[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to MAX2_REG_ADDR[2]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to MAX2_REG_ADDR[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to MAX2_REG_ADDR[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to MAX2_RESET
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_BCLK
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_DCLK1
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_EXT_SOUND_ENABLE
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_HSYNC
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_LRCK
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RESET
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[11]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[10]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[9]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[8]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[7]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[6]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[5]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[4]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[3]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[2]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_RGB[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_SDAT
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to WSC_VSYNC
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to DEBUG_DCLK_OUT
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to DEBUG_BCLK_OUT
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to DEBUG_OUT[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to DEBUG_OUT[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to DEBUG_OUT[2]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to DEBUG_OUT[3]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to DEBUG_OUT[4]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to DEBUG_OUT[5]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to DEBUG_OUT[6]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to DEBUG_OUT[7]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to FX2_FD[5]
